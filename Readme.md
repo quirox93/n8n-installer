@@ -22,7 +22,7 @@ Este script automatiza la instalación de n8n usando Docker y Docker Compose, in
 Ejecuta el siguiente comando para instalar:
 
 ```bash
-curl -s https://raw.githubusercontent.com/quirox93/n8n-installer/main/n8n-installer.sh | sudo bash
+curl -H "Cache-Control: no-cache" -O https://raw.githubusercontent.com/quirox93/n8n-installer/main/n8n-installer.sh && chmod +x n8n-installer.sh && ./n8n-installer.sh
 ```
 
 Sigue las instrucciones en pantalla para configurar:

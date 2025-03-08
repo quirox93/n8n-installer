@@ -73,6 +73,10 @@ EOF
 cat > docker-compose.yml << 'EOF'
 version: '3.8'
 
+networks:
+  n8n-network:
+    name: n8n-network
+
 volumes:
   db_storage:
   n8n_storage:
@@ -113,10 +117,14 @@ services:
   traefik:
     image: traefik:latest
     restart: always
+    networks:
+      - n8n-network
     command:
+      - "--log.level=INFO"
       - "--api=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=n8n-network"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
@@ -134,6 +142,8 @@ services:
   postgres:
     image: postgres:16
     restart: always
+    networks:
+      - n8n-network
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -144,20 +154,40 @@ services:
       - db_storage:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
     restart: always
+    networks:
+      - n8n-network
     volumes:
       - redis_storage:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 10s
+
+  n8n-webhook-processor:
+    <<: *service-n8n
+    command: webhook
+    environment:
+      <<: *n8n-environment
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n-webhook-processor.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`) && PathPrefix(`/webhook/`)
+      - traefik.http.routers.n8n-webhook-processor.tls=true
+      - traefik.http.routers.n8n-webhook-processor.entrypoints=websecure
+      - traefik.http.routers.n8n-webhook-processor.tls.certresolver=mytlschallenge
+    depends_on:
+      - n8n
+    networks:
+      - n8n-network
 
   n8n:
     <<: *service-n8n
@@ -165,10 +195,17 @@ services:
       <<: *n8n-environment
     labels:
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
+      - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`) && !PathPrefix(`/webhook/`)
       - traefik.http.routers.n8n.tls=true
       - traefik.http.routers.n8n.entrypoints=websecure
       - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
+      - traefik.http.services.n8n.loadbalancer.server.port=5678
+    networks:
+      - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge
 EOF
 
 # Crear script de inicialización de base de datos
