@@ -17,31 +17,22 @@ Este script automatiza la instalación de n8n usando Docker y Docker Compose, in
 - Redis para caché
 - Volúmenes Docker para persistencia de datos
 
-## Uso
+## Instalación
 
-1. Descarga el script:
-   ```bash
-   wget https://raw.githubusercontent.com/tu-usuario/n8n-installer/main/n8n-installer.sh
-   ```
+Ejecuta el siguiente comando para instalar:
 
-2. Dale permisos de ejecución:
-   ```bash
-   chmod +x n8n-installer.sh
-   ```
+```bash
+curl -s https://raw.githubusercontent.com/quirox93/n8n-installer/main/n8n-installer.sh | sudo bash
+```
 
-3. Ejecuta el script:
-   ```bash
-   ./n8n-installer.sh
-   ```
+Sigue las instrucciones en pantalla para configurar:
 
-4. Sigue las instrucciones en pantalla para configurar:
-   - Dominio
-   - Subdominio
-   - Email (para certificados SSL)
+- Dominio
+- Subdominio
+- Email (para certificados SSL)
 
 ## Notas Importantes
 
 - Asegúrate de que los puertos 80 y 443 estén abiertos en tu firewall
 - El script generará automáticamente las credenciales necesarias
 - Toda la configuración se guardará en el archivo .env
-

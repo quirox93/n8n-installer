@@ -8,6 +8,16 @@ NC='\033[0m'
 
 echo -e "${BLUE}=== Instalador de n8n ===${NC}"
 
+# Solicitar información básica
+read -p "Ingresa el subdominio para n8n (ej: n8n): " SUBDOMAIN
+read -p "Ingresa el dominio (ej: ejemplo.com): " DOMAIN_NAME
+read -p "Ingresa tu email (para SSL): " SSL_EMAIL
+
+# Generar claves seguras
+ENCRYPTION_KEY=$(openssl rand -hex 16)
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
+POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -hex 16)
+
 # Instalar Docker y Docker Compose
 echo -e "${BLUE}Instalando Docker y Docker Compose...${NC}"
 
@@ -40,16 +50,6 @@ echo -e "${GREEN}Docker y Docker Compose instalados correctamente${NC}"
 
 # Crear directorio de instalación
 mkdir -p n8n-docker && cd n8n-docker
-
-# Solicitar información básica
-read -p "Ingresa tu dominio (ej: ejemplo.com): " DOMAIN_NAME
-read -p "Ingresa el subdominio para n8n (ej: n8n): " SUBDOMAIN
-read -p "Ingresa tu email (para SSL): " SSL_EMAIL
-
-# Generar claves seguras
-ENCRYPTION_KEY=$(openssl rand -hex 16)
-POSTGRES_PASSWORD=$(openssl rand -hex 16)
-POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -hex 16)
 
 # Crear archivo .env
 cat > .env << EOF
